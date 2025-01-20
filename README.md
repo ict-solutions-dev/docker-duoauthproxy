@@ -37,7 +37,6 @@ You can configure up to 5 additional RADIUS servers using:
 |----------|-------------|
 | `RADIUS_HOST_2` to `RADIUS_HOST_6` | Additional RADIUS server hostnames |
 | `RADIUS_PORT_2` to `RADIUS_PORT_6` | Ports for additional servers (defaults to 1812) |
-| `RADIUS_SECRET_2` to `RADIUS_SECRET_6` | Secrets for additional servers (defaults to primary secret) |
 
 ### Additional RADIUS Clients
 
@@ -54,14 +53,14 @@ Basic docker run command:
 
 ```console
 docker run -d \
-  -e RADIUS_HOST=radius.example.com \
+  -e RADIUS_HOST=10.10.10.2 \
   -e RADIUS_SECRET=radiussecret \
   -e DUO_IKEY=YOUR_IKEY \
   -e DUO_SKEY=YOUR_SKEY \
   -e DUO_API_HOST=api-xyz.duosecurity.com \
   -e RADIUS_CLIENT_IP_1=192.168.1.10 \
   -e RADIUS_CLIENT_SECRET_1=clientsecret \
-  ictsolutions/duoauthproxy
+  ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.4.2
 ```
 
 # Version Management
