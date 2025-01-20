@@ -1,5 +1,5 @@
 # Download base image ubuntu 22.04
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 LABEL org.opencontainers.image.source="https://github.com/ict-solutions-dev/docker-duoauthproxy" \
       org.opencontainers.image.description="Docker image for Duo Security Authentication Proxy with RADIUS support." \
