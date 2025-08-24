@@ -19,7 +19,7 @@ RUN apt-get update && apt-get upgrade -y && \
     perl=5.34.0-3ubuntu1* \
     zlib1g-dev=1:1.2.11.dfsg-2ubuntu9* \
     wget=1.21.2-2ubuntu1* \
-    ca-certificates=20230311ubuntu0.22.04.1* && \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 # Add default user (with UID 35505 and GID 35505)
