@@ -11,10 +11,16 @@ LABEL org.opencontainers.image.source="https://github.com/ict-solutions-dev/dock
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Update Ubuntu Software repository
-RUN apt update && apt upgrade -y
+RUN apt-get update && apt-get upgrade -y
 
 # Install dependencies
-RUN apt-get -y install libssl-dev build-essential libffi-dev perl zlib1g-dev wget
+RUN apt-get install -y --no-install-recommends \
+    libssl-dev=3.0.2-0ubuntu1* \
+    build-essential=12.9ubuntu3* \
+    libffi-dev=3.4.2-4* \
+    perl=5.34.0-3ubuntu1* \
+    zlib1g-dev=1:1.2.11.dfsg-2ubuntu9* \
+    wget=1.21.2-2ubuntu1*
 
 # Add default user (with UID 35505 and GID 35505)
 RUN groupadd -r duo -g 35505 && useradd --no-log-init -r -g duo -u 35505 duo
@@ -23,19 +29,22 @@ RUN groupadd -r duo -g 35505 && useradd --no-log-init -r -g duo -u 35505 duo
 ARG DUO_VERSION
 
 # Install duoauthproxy itself
-RUN wget -O /tmp/duoauthproxy-${DUO_VERSION}-src.tgz https://dl.duosecurity.com/duoauthproxy-${DUO_VERSION}-src.tgz && \
-    tar -zxf /tmp/duoauthproxy-${DUO_VERSION}-src.tgz -C /tmp && \
-    rm /tmp/duo*.tgz && \
-    mv /tmp/duoauthproxy-*-src /tmp/duoauthproxy-src && \
-    cd /tmp/duoauthproxy-src && \
-    make && \
-    cd /tmp/duoauthproxy-src/duoauthproxy-build && \
-    ./install --install-dir /opt/duoauthproxy --service-user duo --log-group duo --create-init-script no --enable-selinux no
+WORKDIR /tmp
+RUN wget --progress=dot:giga -O duoauthproxy-${DUO_VERSION}-src.tgz https://dl.duosecurity.com/duoauthproxy-${DUO_VERSION}-src.tgz && \
+    tar -zxf duoauthproxy-${DUO_VERSION}-src.tgz && \
+    rm duo*.tgz && \
+    mv duoauthproxy-*-src duoauthproxy-src
+
+WORKDIR /tmp/duoauthproxy-src
+RUN make
+
+WORKDIR /tmp/duoauthproxy-src/duoauthproxy-build
+RUN ./install --install-dir /opt/duoauthproxy --service-user duo --log-group duo --create-init-script no --enable-selinux no
 
 # Clean up
 RUN rm -rf /tmp/duoauthproxy-src && \
     rm -rf /var/lib/apt/lists/* && \
-    apt clean
+    apt-get clean
 
 # Expose Ports for the Application
 EXPOSE 1812-1818/udp 18120/udp 636/tcp 389/tcp
