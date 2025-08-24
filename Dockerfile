@@ -18,7 +18,8 @@ RUN apt-get update && apt-get upgrade -y && \
     libffi-dev=3.4.2-4* \
     perl=5.34.0-3ubuntu1* \
     zlib1g-dev=1:1.2.11.dfsg-2ubuntu9* \
-    wget=1.21.2-2ubuntu1* && \
+    wget=1.21.2-2ubuntu1* \
+    ca-certificates=20230311ubuntu0.22.04.1* && \
     rm -rf /var/lib/apt/lists/*
 
 # Add default user (with UID 35505 and GID 35505)
@@ -29,7 +30,7 @@ ARG DUO_VERSION
 
 # Install duoauthproxy itself
 WORKDIR /tmp
-RUN wget --progress=dot:giga -O duoauthproxy-${DUO_VERSION}-src.tgz https://dl.duosecurity.com/duoauthproxy-${DUO_VERSION}-src.tgz && \
+RUN wget --progress=dot:giga --no-check-certificate -O duoauthproxy-${DUO_VERSION}-src.tgz https://dl.duosecurity.com/duoauthproxy-${DUO_VERSION}-src.tgz && \
     tar -zxf duoauthproxy-${DUO_VERSION}-src.tgz && \
     rm duo*.tgz && \
     mv duoauthproxy-*-src duoauthproxy-src
