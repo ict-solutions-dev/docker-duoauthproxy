@@ -11,6 +11,7 @@ LABEL org.opencontainers.image.source="https://github.com/ict-solutions-dev/dock
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Update Ubuntu Software repository and install dependencies
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
     libssl-dev=3.0.2-0ubuntu1* \
@@ -19,8 +20,8 @@ RUN apt-get update && apt-get upgrade -y && \
     perl=5.34.0-3ubuntu1* \
     zlib1g-dev=1:1.2.11.dfsg-2ubuntu9* \
     wget=1.21.2-2ubuntu1* \
-    ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Add default user (with UID 35505 and GID 35505)
 RUN groupadd -r duo -g 35505 && useradd --no-log-init -r -g duo -u 35505 duo
