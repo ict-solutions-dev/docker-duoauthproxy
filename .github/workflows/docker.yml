@@ -129,7 +129,7 @@ jobs:
         if: github.event_name != 'pull_request' && success()
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-${{ github.run_id }}
+          name: sbom-${{ github.run_id }}-${{ matrix.DUO_VERSION }}
           path: sbom.spdx.json
 
       - name: Attest build provenance
