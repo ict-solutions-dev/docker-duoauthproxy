@@ -203,14 +203,13 @@ main() {
         exit 1
     fi
 
-    log "Starting DuoAuthProxy..."
+    log "Connectivity test passed. Now starting DuoAuthProxy daemon..."
+    log "Note: Further logs will come from the DuoAuthProxy service itself."
 
     exec /opt/duoauthproxy/bin/authproxy || {
         log "ERROR: Failed to start DuoAuthProxy"
         exit 1
     }
-
-    log "DuoAuthProxy started successfully."
 }
 
 main "$@"
