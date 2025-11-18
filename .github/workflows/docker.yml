@@ -119,7 +119,7 @@ jobs:
 
       - name: Generate SBOM
         if: github.event_name != 'pull_request' && success()
-        uses: anchore/sbom-action@v0.20.8
+        uses: anchore/sbom-action@v0.20.10
         with:
           image: ${{ steps.prep.outputs.tags }}
           format: spdx-json
