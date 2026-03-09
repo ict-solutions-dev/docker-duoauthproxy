@@ -60,14 +60,7 @@ jobs:
             RELEASE_VERSION=edge
           fi
 
-          TAGS="${IMAGE_ID}:${RELEASE_VERSION}-duo${DUO_VERSION}"
-
-          # Add latest tag for tagged releases
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            TAGS="${TAGS},${IMAGE_ID}:latest"
-          fi
-
-          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          echo "tags=${IMAGE_ID}:${RELEASE_VERSION}-duo${DUO_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         id: build
