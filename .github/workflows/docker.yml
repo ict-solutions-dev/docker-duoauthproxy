@@ -14,44 +14,11 @@ concurrency:
 
 env:
   GHCR_IMAGE_NAME: duoauthproxy
-  DOCKERHUB_IMAGE_NAME: ictsolutions/duoauthproxy
+  DUO_VERSION: "6.6.0"
 
 jobs:
-  get-versions:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-      release_version: ${{ steps.version.outputs.release_version }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Get version from tag
-        id: version
-        shell: bash
-        run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            echo "release_version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
-          else
-            echo "release_version=edge" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Set matrix
-        id: set-matrix
-        shell: bash
-        run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            echo "matrix={\"DUO_VERSION\":[${{ github.event.inputs.version }}]}" >> "$GITHUB_OUTPUT"
-          else
-            VERSIONS=$(grep '^- ' SUPPORTED_VERSIONS.md | sed 's/- /"/;s/$/"/' | tr '\n' ',' | sed 's/,$//')
-            echo "matrix={\"DUO_VERSION\":[${VERSIONS}]}" >> "$GITHUB_OUTPUT"
-          fi
-
   build-push:
-    needs: get-versions
     runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{fromJson(needs.get-versions.outputs.matrix)}}
-      fail-fast: false
     timeout-minutes: 60
     permissions:
       contents: write
@@ -86,8 +53,21 @@ jobs:
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$GHCR_IMAGE_NAME
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          FULL_VERSION=${{ needs.get-versions.outputs.release_version }}-duo${{ matrix.DUO_VERSION }}
-          echo "tags=${IMAGE_ID}:${FULL_VERSION}" >> "$GITHUB_OUTPUT"
+
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            RELEASE_VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            RELEASE_VERSION=edge
+          fi
+
+          TAGS="${IMAGE_ID}:${RELEASE_VERSION}-duo${DUO_VERSION}"
+
+          # Add latest tag for tagged releases
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            TAGS="${TAGS},${IMAGE_ID}:latest"
+          fi
+
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         id: build
@@ -99,7 +79,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
           build-args: |
-            DUO_VERSION=${{ matrix.DUO_VERSION }}
+            DUO_VERSION=${{ env.DUO_VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -129,7 +109,7 @@ jobs:
         if: github.event_name != 'pull_request' && success()
         uses: actions/upload-artifact@v7
         with:
-          name: sbom-${{ github.run_id }}-${{ matrix.DUO_VERSION }}
+          name: sbom-${{ github.run_id }}
           path: sbom.spdx.json
 
       - name: Attest build provenance
@@ -145,7 +125,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Build Information:**" >> $GITHUB_STEP_SUMMARY
           echo "- Tags: ${{ steps.prep.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
-          echo "- DUO Version: ${{ matrix.DUO_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- DUO Version: ${{ env.DUO_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- Platforms: linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
           echo "- Digest: ${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -154,7 +134,7 @@ jobs:
             echo "- ✅ Vulnerability scan completed" >> $GITHUB_STEP_SUMMARY
             echo "- ✅ SBOM generated (artifact: sbom-${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
             echo "- ✅ Build provenance attested" >> $GITHUB_STEP_SUMMARY
-            echo "- ✅ Images pushed to GHCR and Docker Hub" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Images pushed to GHCR" >> $GITHUB_STEP_SUMMARY
           else
             echo "- 🔍 Build-only mode (PR)" >> $GITHUB_STEP_SUMMARY
             echo "- ⏭️ Security scans skipped" >> $GITHUB_STEP_SUMMARY
