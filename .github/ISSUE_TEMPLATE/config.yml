@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Duo Security Documentation
+    url: https://duo.com/docs/authproxy-reference
+    about: Official Duo Authentication Proxy reference
