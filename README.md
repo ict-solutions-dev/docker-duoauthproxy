@@ -18,7 +18,7 @@ docker run -d \
   -e DUO_API_HOST=api-XXXXXXXX.duosecurity.com \
   -e RADIUS_CLIENT_IP_1=192.168.1.10 \
   -e RADIUS_CLIENT_SECRET_1=clientsecret \
-  ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.5.2
+  ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.6.0
 ```
 
 ## Docker Compose
@@ -26,7 +26,7 @@ docker run -d \
 ```yaml
 services:
   duoauthproxy:
-    image: ghcr.io/ict-solutions-dev/duoauthproxy:1.1.0-duo6.5.2
+    image: ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.6.0
     container_name: duoauthproxy
     restart: unless-stopped
     ports:
@@ -147,30 +147,46 @@ The entrypoint script ([`assets/01-init.sh`](assets/01-init.sh)) performs the fo
 
 Secrets are redacted in the startup log output.
 
+## Versioning
+
+This project uses a **dual version scheme** — the image tag contains both the project version and the upstream Duo Authentication Proxy version:
+
+```
+ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.6.0
+                                        ^^^^^     ^^^^^
+                                        project   Duo upstream
+```
+
+| Change | Bump | Example |
+| --- | --- | --- |
+| Breaking change (renamed env vars, new entrypoint) | **Major** | `v1.x.x` → `v2.0.0` |
+| New feature (RadSec support, new env vars) | **Minor** | `v1.1.0` → `v1.2.0` |
+| Bugfix, Duo version bump, base image update | **Patch** | `v1.2.0` → `v1.2.1` |
+
 ## Image Tags
 
 Images are published to [GitHub Container Registry](https://github.com/ict-solutions-dev/docker-duoauthproxy/pkgs/container/duoauthproxy).
 
 | Tag Pattern | Source | Example |
 | --- | --- | --- |
-| `edge-duo{VERSION}` | `develop` branch | `edge-duo6.5.2` |
-| `{RELEASE}-duo{VERSION}` | Git tag (`v*`) | `1.1.0-duo6.5.2` |
+| `edge-duo{VERSION}` | `develop` branch | `edge-duo6.6.0` |
+| `{RELEASE}-duo{VERSION}` | Git tag (`v*`) | `1.2.0-duo6.6.0` |
 
 ```bash
 # Development (latest from develop branch)
-docker pull ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.5.2
+docker pull ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.6.0
 
 # Production release
-docker pull ghcr.io/ict-solutions-dev/duoauthproxy:1.1.0-duo6.5.2
+docker pull ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.6.0
 ```
 
-Supported Duo Authentication Proxy versions are listed in [`SUPPORTED_VERSIONS.md`](SUPPORTED_VERSIONS.md).
+Only the latest Duo version is actively built. Older images remain available in GHCR but are no longer rebuilt.
 
 ## CI/CD Pipeline
 
-The [GitHub Actions workflow](.github/workflows/docker.yml) runs on push to `develop`, version tags (`v*`), and manual dispatch.
+The [GitHub Actions workflow](.github/workflows/docker.yml) runs on push to `develop`, version tags (`v*`), and manual dispatch. The Duo version is defined as `DUO_VERSION` env in the workflow file.
 
-For each supported Duo version the pipeline:
+The pipeline:
 
 1. **Lints** the Dockerfile with [hadolint](https://github.com/hadolint/hadolint)
 2. **Builds** multi-arch images (`linux/amd64`, `linux/arm64`) using Docker Buildx
