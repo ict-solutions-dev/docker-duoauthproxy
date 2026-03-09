@@ -10,3 +10,4 @@ To add a new version, append it to the list below and push to `develop`. The pip
 - 6.5.0
 - 6.5.1
 - 6.5.2
+- 6.6.0
