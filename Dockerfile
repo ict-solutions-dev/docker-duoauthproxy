@@ -40,10 +40,10 @@ WORKDIR /tmp/duoauthproxy-src
 
 # Optional: enable DNS hostname support for [radius_client] host parameter
 ARG ENABLE_DNS_PATCH=false
-COPY assets/patch-dns-support.py /tmp/patch-dns-support.py
+COPY assets/patch-dns-support.sh /tmp/patch-dns-support.sh
 RUN if [ "$ENABLE_DNS_PATCH" = "true" ]; then \
-      python3 /tmp/patch-dns-support.py /tmp/duoauthproxy-src; \
-    fi && rm /tmp/patch-dns-support.py
+      sh /tmp/patch-dns-support.sh /tmp/duoauthproxy-src; \
+    fi && rm /tmp/patch-dns-support.sh
 
 RUN make
 
