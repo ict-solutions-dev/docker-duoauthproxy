@@ -119,6 +119,28 @@ Every environment variable that contains sensitive data supports the `_FILE` suf
 
 If both `VAR` and `VAR_FILE` are set, the container will exit with an error.
 
+## DNS Variant
+
+The standard Duo Authentication Proxy only accepts IP addresses for the `RADIUS_HOST` parameter. The `-dns` image variant patches the proxy to also accept DNS hostnames, which is useful in Docker Swarm or Compose environments where services are referenced by name.
+
+```yaml
+services:
+  duoauthproxy:
+    image: ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.6.0-dns
+    environment:
+      RADIUS_HOST: nps-server  # Docker service name instead of IP
+```
+
+The DNS variant resolves hostnames to IP addresses at container startup. The resolved IP is used for all subsequent RADIUS communication.
+
+> **Note:** DNS resolution happens once at startup. If the target service IP changes (e.g. container reschedule), the proxy container must be restarted. In Docker Swarm this is typically not an issue since service VIPs are stable.
+
+To build the DNS variant locally:
+
+```bash
+docker build --build-arg DUO_VERSION=6.6.0 --build-arg ENABLE_DNS_PATCH=true -t duoauthproxy:dns .
+```
+
 ## Exposed Ports
 
 | Port | Protocol | Purpose |
@@ -171,6 +193,8 @@ Images are published to [GitHub Container Registry](https://github.com/ict-solut
 | --- | --- | --- |
 | `edge-duo{VERSION}` | `develop` branch | `edge-duo6.6.0` |
 | `{RELEASE}-duo{VERSION}` | Git tag (`v*`) | `1.2.0-duo6.6.0` |
+| `edge-duo{VERSION}-dns` | `develop` branch (DNS variant) | `edge-duo6.6.0-dns` |
+| `{RELEASE}-duo{VERSION}-dns` | Git tag (`v*`, DNS variant) | `1.2.0-duo6.6.0-dns` |
 
 ```bash
 # Development (latest from develop branch)
@@ -178,6 +202,9 @@ docker pull ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.6.0
 
 # Production release
 docker pull ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.6.0
+
+# DNS variant (supports hostnames in RADIUS_HOST)
+docker pull ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.6.0-dns
 ```
 
 Only the latest Duo version is actively built. Older images remain available in GHCR but are no longer rebuilt.
