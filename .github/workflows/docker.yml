@@ -61,6 +61,7 @@ jobs:
           fi
 
           echo "tags=${IMAGE_ID}:${RELEASE_VERSION}-duo${DUO_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tags_dns=${IMAGE_ID}:${RELEASE_VERSION}-duo${DUO_VERSION}-dns" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         id: build
@@ -76,6 +77,21 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build and push (DNS variant)
+        id: build-dns
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.prep.outputs.tags_dns }}
+          build-args: |
+            DUO_VERSION=${{ env.DUO_VERSION }}
+            ENABLE_DNS_PATCH=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Run Trivy vulnerability scanner
         if: github.event_name != 'pull_request' && success()
         uses: aquasecurity/trivy-action@0.35.0
@@ -84,11 +100,27 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
 
+      - name: Run Trivy vulnerability scanner (DNS variant)
+        if: github.event_name != 'pull_request' && success()
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ${{ steps.prep.outputs.tags_dns }}
+          format: 'sarif'
+          output: 'trivy-results-dns.sarif'
+
       - name: Upload Trivy scan results to GitHub Security tab
         if: github.event_name != 'pull_request' && success()
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results.sarif'
+          category: standard
+
+      - name: Upload Trivy scan results to GitHub Security tab (DNS variant)
+        if: github.event_name != 'pull_request' && success()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-results-dns.sarif'
+          category: dns-variant
 
       - name: Generate SBOM
         if: github.event_name != 'pull_request' && success()
@@ -98,12 +130,22 @@ jobs:
           format: spdx-json
           output-file: sbom.spdx.json
 
+      - name: Generate SBOM (DNS variant)
+        if: github.event_name != 'pull_request' && success()
+        uses: anchore/sbom-action@v0.23.1
+        with:
+          image: ${{ steps.prep.outputs.tags_dns }}
+          format: spdx-json
+          output-file: sbom-dns.spdx.json
+
       - name: Upload SBOM as artifact
         if: github.event_name != 'pull_request' && success()
         uses: actions/upload-artifact@v7
         with:
           name: sbom-${{ github.run_id }}
-          path: sbom.spdx.json
+          path: |
+            sbom.spdx.json
+            sbom-dns.spdx.json
 
       - name: Attest build provenance
         if: github.event_name != 'pull_request' && success()
@@ -112,21 +154,28 @@ jobs:
           subject-name: ${{ steps.prep.outputs.tags }}
           subject-digest: ${{ steps.build.outputs.digest }}
 
+      - name: Attest build provenance (DNS variant)
+        if: github.event_name != 'pull_request' && success()
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: ${{ steps.prep.outputs.tags_dns }}
+          subject-digest: ${{ steps.build-dns.outputs.digest }}
+
       - name: Job Summary
         run: |
           echo "### Docker Build Summary 🐳" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Build Information:**" >> $GITHUB_STEP_SUMMARY
-          echo "- Tags: ${{ steps.prep.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Standard: \`${{ steps.prep.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- DNS variant: \`${{ steps.prep.outputs.tags_dns }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- DUO Version: ${{ env.DUO_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- Platforms: linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
-          echo "- Digest: ${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Security & Compliance:**" >> $GITHUB_STEP_SUMMARY
           if [ "${{ github.event_name }}" != "pull_request" ]; then
-            echo "- ✅ Vulnerability scan completed" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Vulnerability scan completed (both variants)" >> $GITHUB_STEP_SUMMARY
             echo "- ✅ SBOM generated (artifact: sbom-${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-            echo "- ✅ Build provenance attested" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Build provenance attested (both variants)" >> $GITHUB_STEP_SUMMARY
             echo "- ✅ Images pushed to GHCR" >> $GITHUB_STEP_SUMMARY
           else
             echo "- 🔍 Build-only mode (PR)" >> $GITHUB_STEP_SUMMARY
