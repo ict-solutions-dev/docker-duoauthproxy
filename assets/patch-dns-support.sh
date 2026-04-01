@@ -64,6 +64,7 @@ awk '
     print "def _resolve_host(host):"
     print "    \"\"\"Resolve hostname to IP address. Pass through if already an IP.\"\"\""
     print "    import socket"
+    print "    import netaddr"
     print "    if netaddr.valid_ipv4(host, flags=netaddr.core.INET_PTON) or netaddr.valid_ipv6(host):"
     print "        return host"
     print "    try:"
