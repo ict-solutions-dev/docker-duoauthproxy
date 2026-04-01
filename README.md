@@ -86,6 +86,8 @@ volumes:
 | `RADIUS_FAILMODE` | `safe` | Behavior when Duo is unreachable — `safe` (allow) or `secure` (deny) |
 | `RADIUS_PASS_THROUGH_ALL` | `false` | Forward all RADIUS attributes to the client |
 | `RADIUS_PASS_THROUGH_ATTRS` | — | Comma-separated attribute names to forward (e.g. `Framed-IP-Address,Reply-Message`) |
+| `RADIUS_HOST_WAIT_RETRIES` | `30` | Max attempts to resolve `RADIUS_HOST` before failing (useful with `-dns` variant in Swarm) |
+| `RADIUS_HOST_WAIT_INTERVAL` | `2` | Seconds between resolution attempts |
 
 ### Multiple RADIUS Servers (up to 6)
 

@@ -67,6 +67,31 @@ validate_client_type() {
     }
 }
 
+wait_for_radius_hosts() {
+    local retries=${RADIUS_HOST_WAIT_RETRIES:-30}
+    local interval=${RADIUS_HOST_WAIT_INTERVAL:-2}
+    local hosts=("${RADIUS_HOST}")
+
+    for i in {2..6}; do
+        local host_var="RADIUS_HOST_${i}"
+        [ -n "${!host_var}" ] && hosts+=("${!host_var}")
+    done
+
+    for host in "${hosts[@]}"; do
+        local attempt=0
+        while ! getent hosts "${host}" >/dev/null 2>&1; do
+            attempt=$((attempt + 1))
+            if [ "${attempt}" -ge "${retries}" ]; then
+                log "ERROR: Could not resolve RADIUS host '${host}' after ${retries} attempts"
+                exit 1
+            fi
+            log "Waiting for RADIUS host '${host}' to become resolvable (attempt ${attempt}/${retries})..."
+            sleep "${interval}"
+        done
+        log "RADIUS host '${host}' is resolvable."
+    done
+}
+
 validate_failmode() {
     local valid_modes=("safe" "secure")
     local failmode=${RADIUS_FAILMODE:-safe}
@@ -186,6 +211,8 @@ main() {
     validate_client_type
     validate_failmode
     validate_pass_through_all_value
+
+    wait_for_radius_hosts
 
     log "Writing configuration to ${CONFIG_FILE}..."
 
