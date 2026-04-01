@@ -35,7 +35,7 @@ awk '
     print "        return False"
     print "    if hostname.endswith(\".\"):"
     print "        hostname = hostname[:-1]"
-    print "    pattern = re.compile(r\"^[a-zA-Z0-9]([a-zA-Z0-9\\\\-]{0,61}[a-zA-Z0-9])?$\")"
+    print "    pattern = re.compile(r\"^[a-zA-Z0-9]([a-zA-Z0-9_\\\\-]{0,61}[a-zA-Z0-9])?$\")"
     print "    return all(pattern.match(label) for label in hostname.split(\".\"))"
     print ""
     print ""
