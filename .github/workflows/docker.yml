@@ -132,7 +132,7 @@ jobs:
 
       - name: Generate SBOM (DNS variant)
         if: github.event_name != 'pull_request' && success()
-        uses: anchore/sbom-action@v0.23.1
+        uses: anchore/sbom-action@v0.24.0
         with:
           image: ${{ steps.prep.outputs.tags_dns }}
           format: spdx-json
