@@ -38,13 +38,6 @@ RUN wget --progress=dot:giga --no-check-certificate -O duoauthproxy-${DUO_VERSIO
 
 WORKDIR /tmp/duoauthproxy-src
 
-# Optional: enable DNS hostname support for [radius_client] host parameter
-ARG ENABLE_DNS_PATCH=false
-COPY assets/patch-dns-support.sh /tmp/patch-dns-support.sh
-RUN if [ "$ENABLE_DNS_PATCH" = "true" ]; then \
-      sh /tmp/patch-dns-support.sh /tmp/duoauthproxy-src; \
-    fi && rm /tmp/patch-dns-support.sh
-
 RUN make
 
 WORKDIR /tmp/duoauthproxy-src/duoauthproxy-build
