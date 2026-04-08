@@ -95,8 +95,30 @@ validate_required_vars() {
     done
 }
 
-write_radius_client_section() {
+write_main_section() {
     cat >"$CONFIG_FILE" <<EOF
+[main]
+EOF
+
+    local bool_val
+    for var in DEBUG LOG_AUTH_EVENTS LOG_STDOUT; do
+        bool_val=$(echo "${!var:-false}" | tr '[:upper:]' '[:lower:]')
+        [ "$bool_val" = "true" ] && echo "${var,,}=true" >>"$CONFIG_FILE"
+    done
+
+    [ -n "${LOG_DIR}" ]           && echo "log_dir=${LOG_DIR}"                     >>"$CONFIG_FILE"
+    [ -n "${LOG_MAX_FILES}" ]     && echo "log_max_files=${LOG_MAX_FILES}"         >>"$CONFIG_FILE"
+    [ -n "${LOG_MAX_SIZE}" ]      && echo "log_max_size=${LOG_MAX_SIZE}"           >>"$CONFIG_FILE"
+    [ -n "${INTERFACE}" ]         && echo "interface=${INTERFACE}"                 >>"$CONFIG_FILE"
+    [ -n "${HTTP_PROXY_HOST}" ]   && echo "http_proxy_host=${HTTP_PROXY_HOST}"     >>"$CONFIG_FILE"
+    [ -n "${HTTP_PROXY_HOST}" ] && [ -n "${HTTP_PROXY_PORT}" ] && \
+        echo "http_proxy_port=${HTTP_PROXY_PORT}"                                  >>"$CONFIG_FILE"
+
+    echo "" >>"$CONFIG_FILE"
+}
+
+write_radius_client_section() {
+    cat >>"$CONFIG_FILE" <<EOF
 [radius_client]
 host=${RADIUS_HOST}
 EOF
@@ -189,6 +211,7 @@ main() {
 
     log "Writing configuration to ${CONFIG_FILE}..."
 
+    write_main_section
     write_radius_client_section
     write_radius_server_section
 
