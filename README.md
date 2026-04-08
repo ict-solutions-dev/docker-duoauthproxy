@@ -86,6 +86,15 @@ volumes:
 | `RADIUS_FAILMODE` | `safe` | Behavior when Duo is unreachable — `safe` (allow) or `secure` (deny) |
 | `RADIUS_PASS_THROUGH_ALL` | `false` | Forward all RADIUS attributes to the client |
 | `RADIUS_PASS_THROUGH_ATTRS` | — | Comma-separated attribute names to forward (e.g. `Framed-IP-Address,Reply-Message`) |
+| `DEBUG` | `false` | Enable debug logging (`[main]` section) |
+| `LOG_AUTH_EVENTS` | `false` | Write SIEM-consumable auth events to `authevents.log` |
+| `LOG_STDOUT` | `false` | Send logs to stdout (recommended for Docker) |
+| `LOG_DIR` | — | Directory for log files (default: `log`) |
+| `LOG_MAX_FILES` | `6` | Maximum number of rotated log files to keep |
+| `LOG_MAX_SIZE` | `10485760` | Maximum log file size in bytes |
+| `INTERFACE` | — | IP address to bind to (default: all interfaces) |
+| `HTTP_PROXY_HOST` | — | Hostname/IP of upstream HTTP proxy for Duo API communication |
+| `HTTP_PROXY_PORT` | `80` | Port for `HTTP_PROXY_HOST` |
 
 ### Multiple RADIUS Servers (up to 6)
 
