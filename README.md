@@ -18,7 +18,7 @@ docker run -d \
   -e DUO_API_HOST=api-XXXXXXXX.duosecurity.com \
   -e RADIUS_CLIENT_IP_1=192.168.1.10 \
   -e RADIUS_CLIENT_SECRET_1=clientsecret \
-  ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.6.0
+  ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.8.0
 ```
 
 ## Docker Compose
@@ -26,7 +26,7 @@ docker run -d \
 ```yaml
 services:
   duoauthproxy:
-    image: ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.6.0
+    image: ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.8.0
     container_name: duoauthproxy
     restart: unless-stopped
     ports:
@@ -161,7 +161,7 @@ Secrets are redacted in the startup log output.
 This project uses a **dual version scheme** — the image tag contains both the project version and the upstream Duo Authentication Proxy version:
 
 ```
-ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.6.0
+ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.8.0
                                         ^^^^^     ^^^^^
                                         project   Duo upstream
 ```
@@ -178,15 +178,15 @@ Images are published to [GitHub Container Registry](https://github.com/ict-solut
 
 | Tag Pattern | Source | Example |
 | --- | --- | --- |
-| `edge-duo{VERSION}` | `develop` branch | `edge-duo6.6.0` |
-| `{RELEASE}-duo{VERSION}` | Git tag (`v*`) | `1.2.0-duo6.6.0` |
+| `edge-duo{VERSION}` | `develop` branch | `edge-duo6.8.0` |
+| `{RELEASE}-duo{VERSION}` | Git tag (`v*`) | `1.2.0-duo6.8.0` |
 
 ```bash
 # Development (latest from develop branch)
-docker pull ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.6.0
+docker pull ghcr.io/ict-solutions-dev/duoauthproxy:edge-duo6.8.0
 
 # Production release
-docker pull ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.6.0
+docker pull ghcr.io/ict-solutions-dev/duoauthproxy:1.2.0-duo6.8.0
 ```
 
 Only the latest Duo version is actively built. Older images remain available in GHCR but are no longer rebuilt.
